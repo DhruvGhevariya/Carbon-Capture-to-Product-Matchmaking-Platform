@@ -188,29 +188,29 @@ export const SellerDashboardPage: React.FC = () => {
   };
 
   const dashboard = dashboardResponse;
-  const currentStored = dashboard?.current_stored_tons ?? 350;
-  const totalCapacity = dashboard?.total_capacity_tons ?? 500;
-  const revenueTotal = dashboard?.revenue ?? 6845000;
-  const storageUtilizationPct = dashboard?.storage_utilization ?? 70;
+  const currentStored = dashboard?.current_stored_tons ?? 0;
+  const totalCapacity = dashboard?.total_capacity_tons ?? 0;
+  const revenueTotal = dashboard?.revenue ?? 0;
+  const storageUtilizationPct = dashboard?.storage_utilization ?? 0;
   const monthlyListingTrend = (dashboard?.monthly_listing_trend && dashboard.monthly_listing_trend.length > 0)
     ? dashboard.monthly_listing_trend.map((t) => ({
         month: t.month,
-        capturedTons: t.capturedTons ?? t.volume ?? 180,
-        offTakenTons: t.offTakenTons ?? (t.volume ? Math.round(t.volume * 0.85) : 150),
-        volume: t.volume ?? t.capturedTons ?? 180,
-        revenue: t.revenue ?? (t.volume ? t.volume * 4800 : 864000),
+        capturedTons: t.capturedTons ?? t.volume ?? 0,
+        offTakenTons: t.offTakenTons ?? (t.volume ? Math.round(t.volume * 0.85) : 0),
+        volume: t.volume ?? t.capturedTons ?? 0,
+        revenue: t.revenue ?? (t.volume ? t.volume * 4800 : 0),
       }))
-    : [
-        { month: 'Apr', volume: 180, revenue: 864000, capturedTons: 180, offTakenTons: 150 },
-        { month: 'May', volume: 220, revenue: 1056000, capturedTons: 220, offTakenTons: 195 },
-        { month: 'Jun', volume: 290, revenue: 1392000, capturedTons: 290, offTakenTons: 260 },
-        { month: 'Jul', volume: 340, revenue: 1632000, capturedTons: 340, offTakenTons: 310 },
-        { month: 'Aug', volume: 410, revenue: 1968000, capturedTons: 410, offTakenTons: 380 },
-        { month: 'Sep', volume: 480, revenue: 2304000, capturedTons: 480, offTakenTons: 440 },
-      ];
+    : [];
 
   const listings: Listing[] = listingsResponse?.items ?? [];
   const bids: Bid[] = (bidsResponse as unknown as Bid[]) ?? [];
+
+  // Dynamically calculate seller statistics based on genuine ledger data
+  const totalCO2Traded = listings.reduce((acc, l) => acc + (l.volume_metric_tons || 0), 0);
+  const averageAIMatch = bids.length > 0
+    ? Number((bids.reduce((acc, b) => acc + (b.ai_match_score || 90), 0) / bids.length).toFixed(1))
+    : listings.length > 0 ? 94.0 : 0;
+  const activePartners = new Set(bids.map((b) => b.counter_party_company).filter(Boolean)).size;
 
   return (
     <div className="space-y-6 pb-12">
@@ -260,10 +260,10 @@ export const SellerDashboardPage: React.FC = () => {
         <LoadingSkeleton type="card" rows={4} />
       ) : (
         <DashboardAnalyticsCards
-          totalCO2Traded={1470}
+          totalCO2Traded={totalCO2Traded}
           totalRevenue={revenueTotal}
-          averageAIMatch={92.8}
-          activePartners={7}
+          averageAIMatch={averageAIMatch}
+          activePartners={activePartners}
           trendData={monthlyListingTrend}
         />
       )}

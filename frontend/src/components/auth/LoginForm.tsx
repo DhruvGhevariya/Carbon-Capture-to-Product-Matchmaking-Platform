@@ -35,16 +35,22 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 // Registration Validation Schema
-const registerSchema = z.object({
-  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  email: z.string().min(1, 'Corporate work email is required').email('Enter a valid corporate email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(['seller', 'buyer']),
-  companyName: z.string().min(2, 'Company name is required'),
-  industryType: z.string().min(2, 'Industry type is required'),
-  city: z.string().min(2, 'City is required'),
-  locationName: z.string().min(2, 'Facility location is required'),
-});
+const registerSchema = z
+  .object({
+    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+    email: z.string().min(1, 'Corporate work email is required').email('Enter a valid corporate email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Confirm password is required'),
+    role: z.enum(['seller', 'buyer']),
+    companyName: z.string().min(2, 'Company name is required'),
+    industryType: z.string().min(2, 'Industry type is required'),
+    city: z.string().min(2, 'City is required'),
+    locationName: z.string().min(2, 'Facility location is required'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -127,6 +133,7 @@ export const LoginForm: React.FC = () => {
     handleSubmit: handleRegisterSubmit,
     watch: watchRegister,
     setValue: setRegisterValue,
+    reset: resetRegister,
     formState: { errors: registerErrors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -134,6 +141,7 @@ export const LoginForm: React.FC = () => {
       fullName: '',
       email: '',
       password: '',
+      confirmPassword: '',
       role: 'seller',
       companyName: '',
       industryType: 'Cement',
@@ -163,27 +171,16 @@ export const LoginForm: React.FC = () => {
         longitude: coords.lng,
       });
 
-      // 2. Immediately authenticate verified credentials
-      const loginRes = await apiClient.post<LoginApiResponse>('/auth/login', {
-        email: payload.email,
-        password: payload.password,
-      });
-
-      return loginRes.data;
+      return { email: payload.email, password: payload.password };
     },
-    onSuccess: (data) => {
-      setSuccessMessage('Enterprise facility verified with ISO 14064 compliance! Redirecting to terminal...');
-      const token = data.access_token;
-      const user = data.user;
-      login(token, user);
-
-      setTimeout(() => {
-        if (user.role === 'seller') {
-          navigate('/seller/dashboard', { replace: true });
-        } else {
-          navigate('/marketplace', { replace: true });
-        }
-      }, 1000);
+    onSuccess: (registered) => {
+      setSuccessMessage('Enterprise facility registered successfully! Please sign in with your credentials.');
+      // Pre-fill login credentials so the user can easily log in
+      setLoginValue('email', registered.email, { shouldValidate: true });
+      setLoginValue('password', registered.password, { shouldValidate: true });
+      resetRegister();
+      // Switch back to Login Tab as requested
+      setActiveTab('login');
     },
     onError: (error: Error) => {
       setErrorMessage(error.message || 'Registration failed. Please review your details and try again.');
@@ -494,16 +491,50 @@ export const LoginForm: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <Input
-              id="regPassword"
-              type={showPassword ? 'text' : 'password'}
-              label="Password (min 8 chars)"
-              placeholder="••••••••••••"
-              leftIcon={<Lock className="h-4 w-4" />}
-              error={registerErrors.password?.message}
-              {...registerRegister('password')}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Input
+                id="regPassword"
+                type={showPassword ? 'text' : 'password'}
+                label="Password (min 8 chars)"
+                placeholder="••••••••••••"
+                leftIcon={<Lock className="h-4 w-4" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="cursor-pointer text-slate-400 hover:text-slate-600 focus:outline-none dark:hover:text-slate-200"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                }
+                error={registerErrors.password?.message}
+                {...registerRegister('password')}
+              />
+            </div>
+
+            <div>
+              <Input
+                id="regConfirmPassword"
+                type={showPassword ? 'text' : 'password'}
+                label="Confirm Password"
+                placeholder="••••••••••••"
+                leftIcon={<Lock className="h-4 w-4" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="cursor-pointer text-slate-400 hover:text-slate-600 focus:outline-none dark:hover:text-slate-200"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                }
+                error={registerErrors.confirmPassword?.message}
+                {...registerRegister('confirmPassword')}
+              />
+            </div>
           </div>
 
           <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-2.5 text-[11px] text-emerald-800 flex items-center gap-2 dark:bg-emerald-950/40 dark:border-emerald-900 dark:text-emerald-300">

@@ -25,18 +25,11 @@ export interface DashboardAnalyticsCardsProps {
 }
 
 export const DashboardAnalyticsCards: React.FC<DashboardAnalyticsCardsProps> = ({
-  totalCO2Traded = 1470,
-  totalRevenue = 6845000,
-  averageAIMatch = 92.8,
-  activePartners = 7,
-  trendData = [
-    { month: 'Apr', volume: 180, revenue: 864000 },
-    { month: 'May', volume: 220, revenue: 1056000 },
-    { month: 'Jun', volume: 290, revenue: 1392000 },
-    { month: 'Jul', volume: 340, revenue: 1632000 },
-    { month: 'Aug', volume: 410, revenue: 1968000 },
-    { month: 'Sep', volume: 480, revenue: 2304000 },
-  ],
+  totalCO2Traded = 0,
+  totalRevenue = 0,
+  averageAIMatch = 0,
+  activePartners = 0,
+  trendData = [],
 }) => {
   return (
     <div className="space-y-4">

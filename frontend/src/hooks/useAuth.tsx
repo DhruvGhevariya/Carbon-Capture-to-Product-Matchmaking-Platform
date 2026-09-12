@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { User, UserRole } from '@/types';
 
 interface AuthContextType {
@@ -14,6 +15,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const queryClient = useQueryClient();
   const [token, setToken] = useState<string | null>(() => {
     const saved = localStorage.getItem('token');
     // Purge mock demo tokens to ensure strict authentic login/signup verification
@@ -59,59 +61,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token, user]);
 
   const login = (newToken: string, newUser: User) => {
+    queryClient.clear();
+    if (!newToken.startsWith('demo-') && newToken !== 'mock-jwt-token') {
+      localStorage.setItem('carbonx_demo_mode_enabled', 'false');
+      localStorage.removeItem('carbonx_demo_sellers');
+      localStorage.removeItem('carbonx_demo_buyers');
+      localStorage.removeItem('carbonx_demo_bids');
+      localStorage.removeItem('carbonx_demo_orders');
+    }
     setToken(newToken);
     setUser(newUser);
   };
 
   const logout = () => {
+    queryClient.clear();
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.setItem('carbonx_demo_mode_enabled', 'false');
+    localStorage.removeItem('carbonx_demo_sellers');
+    localStorage.removeItem('carbonx_demo_buyers');
+    localStorage.removeItem('carbonx_demo_bids');
+    localStorage.removeItem('carbonx_demo_orders');
   };
 
-  // switchRole is only for development preview and must work only after login
+  // switchRole toggles the role on the active authenticated user
   const switchRole = (newRole: UserRole) => {
     if (!user) return;
-    if (newRole === 'seller') {
-      const sellerUser: User = {
-        id: 'user-ultratech',
-        email: 'rajesh.verma@ultratech.com',
-        full_name: 'Rajesh K. Verma',
-        role: 'seller',
-        company_id: 'seller-ultratech',
-        company_name: 'UltraTech Cement',
-        is_active: true,
-        company: {
-          id: 'seller-ultratech',
-          company_name: 'UltraTech Cement',
-          industry_type: 'Cement',
-          location_name: 'Sanand Industrial Cluster, Ahmedabad, Gujarat',
-          latitude: 22.9868,
-          longitude: 72.3814,
-        },
-      };
-      setUser(sellerUser);
-    } else {
-      const buyerUser: User = {
-        id: 'user-greengrow',
-        email: 'ananya.s@greengrow.in',
-        full_name: 'Dr. Ananya Sengupta',
-        role: 'buyer',
-        company_id: 'buyer-greengrow',
-        company_name: 'GreenGrow Chemicals',
-        is_active: true,
-        company: {
-          id: 'buyer-greengrow',
-          company_name: 'GreenGrow Chemicals',
-          industry_type: 'Agro-Chemicals & Bio-enrichment',
-          location_name: 'Kheda Agri Park, Vadodara Hub, Gujarat',
-          latitude: 22.3100,
-          longitude: 73.1900,
-        },
-      };
-      setUser(buyerUser);
-    }
+    queryClient.clear();
+    setUser({
+      ...user,
+      role: newRole,
+    });
   };
 
   return (

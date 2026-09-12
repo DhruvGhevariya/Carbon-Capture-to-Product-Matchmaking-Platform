@@ -56,10 +56,12 @@ async def get_seller_dashboard(
         "data": {
             "active_listings": active_listings_count,
             "current_stored_tons": current_stored_tons,
+            "total_capacity_tons": total_capacity_tons,
             "pending_bids": pending_bids_count,
             "revenue": total_revenue,
             "storage_utilization": storage_utilization_pct,
             "currency": "INR",
+            "monthly_listing_trend": [],
         }
     }
 

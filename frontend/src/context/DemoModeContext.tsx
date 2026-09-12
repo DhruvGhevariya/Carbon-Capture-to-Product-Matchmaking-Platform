@@ -51,8 +51,12 @@ export const DemoModeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [isDemoMode, setIsDemoMode] = useState<boolean>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.DEMO_MODE);
-    // Default to true for HackOut judging ready state!
-    return saved !== null ? saved === 'true' : true;
+    const token = localStorage.getItem('token');
+    // If a real backend authentication token exists, Demo Mode must NEVER default to true
+    if (token && !token.startsWith('demo-')) {
+      return saved === 'true';
+    }
+    return saved === 'true';
   });
 
   const [sellers, setSellers] = useState<DemoSeller[]>(() => {

@@ -18,10 +18,12 @@ export const StorageUtilizationChart: React.FC<StorageUtilizationChartProps> = (
   const used = Math.min(Math.max(currentStoredTons, 0), totalCapacityTons > 0 ? totalCapacityTons : currentStoredTons);
   const available = Math.max(totalCapacityTons - used, 0);
 
-  const data = [
-    { name: 'Stored Buffer (Used)', value: Number(used.toFixed(1)), color: '#059669' },
-    { name: 'Available Capacity', value: Number(available.toFixed(1)), color: '#E2E8F0' },
-  ];
+  const data = (used === 0 && available === 0)
+    ? [{ name: 'Empty Buffer Capacity', value: 1, color: '#E2E8F0' }]
+    : [
+        { name: 'Stored Buffer (Used)', value: Number(used.toFixed(1)), color: '#059669' },
+        { name: 'Available Capacity', value: Number(available.toFixed(1)), color: '#E2E8F0' },
+      ];
 
   const isWarning = utilizationPercentage >= 75;
 

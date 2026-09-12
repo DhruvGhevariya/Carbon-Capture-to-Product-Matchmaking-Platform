@@ -17,8 +17,12 @@ import {
 
 // Helper to check if Demo Mode is active
 const isDemoModeActive = (): boolean => {
-  const flag = localStorage.getItem('carbonx_demo_mode_enabled');
-  return flag !== null ? flag === 'true' : true; // Default to true for demo-readiness
+  const token = localStorage.getItem('token');
+  // If user has a real backend JWT token, demo mode is disabled unless explicitly set to 'true'
+  if (token && !token.startsWith('demo-') && token !== 'mock-jwt-token') {
+    return localStorage.getItem('carbonx_demo_mode_enabled') === 'true';
+  }
+  return localStorage.getItem('carbonx_demo_mode_enabled') === 'true';
 };
 
 const getStoredDemoSellers = (): DemoSeller[] => {
@@ -119,25 +123,8 @@ export const apiService = {
       };
     }
 
-    try {
-      const response = await apiClient.get('/seller/dashboard');
-      return response.data;
-    } catch (err) {
-      // Fallback to demo metrics to guarantee zero blank screens
-      return {
-        success: true,
-        data: {
-          active_listings: 4,
-          current_stored_tons: 350,
-          total_capacity_tons: 500,
-          storage_utilization: 70,
-          pending_bids: 3,
-          revenue: 6845000,
-          currency: 'INR',
-          monthly_listing_trend: INITIAL_DEMO_ANALYTICS.monthly_listing_trend,
-        },
-      };
-    }
+    const response = await apiClient.get('/seller/dashboard');
+    return response.data;
   },
 
   getSellerListings: async (
@@ -167,28 +154,10 @@ export const apiService = {
       };
     }
 
-    try {
-      const response = await apiClient.get('/listings', {
-        params: { status: statusFilter, page, limit },
-      });
-      return response.data;
-    } catch (err) {
-      const sellers = INITIAL_DEMO_SELLERS;
-      const items: Listing[] = sellers.map((s, idx) => ({
-        id: s.id,
-        seller_id: 'user-ultratech',
-        purity_percentage: s.purity_percentage,
-        volume_metric_tons: s.volume_metric_tons,
-        physical_state: s.physical_state,
-        reserve_price_ton: s.reserve_price_ton,
-        status: 'available',
-        available_from: '2026-09-12',
-        available_until: '2026-10-12',
-        created_at: new Date(Date.now() - idx * 86400000).toISOString(),
-        pending_bids_count: 1,
-      }));
-      return { success: true, data: { items, page: 1, limit: 20 } };
-    }
+    const response = await apiClient.get('/listings', {
+      params: { status: statusFilter, page, limit },
+    });
+    return response.data;
   },
 
   createListing: async (listingData: Partial<Listing>) => {
@@ -344,44 +313,8 @@ export const apiService = {
       };
     }
 
-    try {
-      const response = await apiClient.get('/marketplace', { params });
-      return response.data;
-    } catch (err) {
-      // Return demo data on network fallback
-      const sellers = INITIAL_DEMO_SELLERS;
-      const listings: MarketplaceCard[] = sellers.map((seller) => ({
-        listing_id: seller.id,
-        company_name: seller.company_name,
-        industry_type: seller.industry_type,
-        location: seller.location_name,
-        latitude: seller.latitude,
-        longitude: seller.longitude,
-        purity_percentage: seller.purity_percentage,
-        volume_available_tons: seller.volume_metric_tons,
-        physical_state: seller.physical_state,
-        base_price_ton: seller.reserve_price_ton,
-        distance_km: 45,
-        estimated_freight_ton: 350,
-        total_landed_cost_ton: seller.reserve_price_ton + 350,
-        ai_match_score: seller.ai_match_score,
-        status: 'available',
-        created_at: new Date().toISOString(),
-      }));
-
-      return {
-        success: true,
-        data: {
-          listings,
-          total: listings.length,
-          page: 1,
-          limit: 50,
-          total_pages: 1,
-          has_next: false,
-          has_previous: false,
-        },
-      };
-    }
+    const response = await apiClient.get('/marketplace', { params });
+    return response.data;
   },
 
   getMarketplaceDetail: async (id: string) => {
@@ -425,37 +358,8 @@ export const apiService = {
       };
     }
 
-    try {
-      const response = await apiClient.get(`/marketplace/${id}`);
-      return response.data;
-    } catch (err) {
-      const seller = INITIAL_DEMO_SELLERS[0];
-      return {
-        success: true,
-        data: {
-          listing_id: seller.id,
-          company: {
-            id: seller.id,
-            company_name: seller.company_name,
-            industry_type: seller.industry_type,
-            location_name: seller.location_name,
-            latitude: seller.latitude,
-            longitude: seller.longitude,
-          },
-          purity_percentage: seller.purity_percentage,
-          available_tons: seller.volume_metric_tons,
-          reserve_price_ton: seller.reserve_price_ton,
-          physical_state: seller.physical_state,
-          ai_match_score: seller.ai_match_score,
-          estimated_distance_km: 28,
-          estimated_freight_ton: 310,
-          landed_cost_ton: seller.reserve_price_ton + 310,
-          available_from: '2026-09-12',
-          available_until: '2026-10-12',
-          verified: true,
-        },
-      };
-    }
+    const response = await apiClient.get(`/marketplace/${id}`);
+    return response.data;
   },
 
   // Deterministic AI Match Engine
@@ -569,14 +473,10 @@ export const apiService = {
       return { success: true, data: filtered };
     }
 
-    try {
-      const response = await apiClient.get('/bids', {
-        params: { status: statusFilter },
-      });
-      return response.data;
-    } catch (err) {
-      return { success: true, data: getStoredDemoBids() };
-    }
+    const response = await apiClient.get('/bids', {
+      params: { status: statusFilter },
+    });
+    return response.data;
   },
 
   actOnBid: async (id: string, action: 'accept' | 'reject') => {
@@ -627,12 +527,8 @@ export const apiService = {
       return { success: true, data: getStoredDemoOrders() };
     }
 
-    try {
-      const response = await apiClient.get('/orders');
-      return response.data;
-    } catch (err) {
-      return { success: true, data: getStoredDemoOrders() };
-    }
+    const response = await apiClient.get('/orders');
+    return response.data;
   },
 
   getOrderDetail: async (id: string): Promise<{ success: boolean; data: Order }> => {
@@ -642,12 +538,8 @@ export const apiService = {
       return { success: true, data: order };
     }
 
-    try {
-      const response = await apiClient.get(`/orders/${id}`);
-      return response.data;
-    } catch (err) {
-      return { success: true, data: INITIAL_DEMO_ORDERS[0] };
-    }
+    const response = await apiClient.get(`/orders/${id}`);
+    return response.data;
   },
 
   updateOrderStatus: async (id: string, newStatus: string) => {
