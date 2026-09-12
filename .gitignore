@@ -21,6 +21,8 @@ __pycache__/
 dist/
 */dist/
 build/
+.vite/
+*/.vite/
 *.tsbuildinfo
 tsconfig.tsbuildinfo
 tsconfig.node.tsbuildinfo
