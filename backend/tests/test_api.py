@@ -65,3 +65,18 @@ def test_scenario_calculation_api():
     res_json = response.json()
     assert res_json["success"] is True
     assert len(res_json["data"]["financial_scenarios"]) == 3
+
+
+def test_decoupled_routes_api():
+    res_tech = client.get("/api/v1/technologies")
+    assert res_tech.status_code == 200
+    assert res_tech.json()["success"] is True
+
+    res_prod = client.get("/api/v1/products")
+    assert res_prod.status_code == 200
+    assert res_prod.json()["success"] is True
+
+    res_path = client.get("/api/v1/pathways")
+    assert res_path.status_code == 200
+    assert res_path.json()["success"] is True
+
