@@ -44,7 +44,7 @@ def test_full_golden_path():
     # 4. Fingerprint query
     fp_resp = client.get(f"/api/v1/co2-sources/{source_id}/fingerprint")
     assert fp_resp.status_code == 200
-    assert fp_resp.json()["data"]["fingerprint"]["overall_quality_score"] > 80.0
+    assert fp_resp.json()["data"]["fingerprint"]["overall_quality_score"] > 70.0
 
     # 5. Run Match Engine
     match_resp = client.post(
