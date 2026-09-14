@@ -4,76 +4,106 @@
 
 @layer base {
   :root {
-    --color-primary-500: #10B981;
-    --color-primary-600: #059669;
-    --color-secondary-600: #2563EB;
-    --color-secondary-700: #1D4ED8;
-    --color-background: #F8FAFC;
-    --color-surface: #FFFFFF;
-    --color-border: #E2E8F0;
-    --color-text: #0F172A;
-    --color-muted: #64748B;
-    color-scheme: light;
+    --color-bg: #04040A;
+    --color-surface: #080812;
+    --color-surface-elevated: #0D0D1F;
+    --color-border: #12122E;
+    --color-border-bright: #1A1A3E;
+    --color-primary: #E8FF47;
+    --color-secondary: #FF6B35;
+    --color-cyan: #00F0FF;
+    --color-text-primary: #F0F0F8;
+    --color-text-secondary: #DCDCEC;
+    --color-text-subtle: #C4C4D8;
+    --color-text-muted: #9898B8;
+    color-scheme: dark;
   }
 
-  body {
+  html, body {
     margin: 0;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    padding: 0;
+    background-color: #04040A;
+    color: #F0F0F8;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #F8FAFC;
-    color: #0F172A;
+    overflow-x: hidden;
   }
 
-  /* Numeric data tables and KPI readouts */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
 }
 
-/* Custom Minimalist Scrollbar */
+/* Technical Fine Grid Background */
+.bg-tech-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.bg-tech-grid-dense {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* Subtle Radial Spotlight Glow */
+.bg-spotlight-green {
+  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 255, 135, 0.08), transparent 40%);
+}
+
+.bg-radial-gradient {
+  background: radial-gradient(circle at 50% 0%, rgba(0, 255, 135, 0.1) 0%, rgba(18, 20, 28, 0) 70%);
+}
+
+/* Text Stroke Editorial Typography */
+.text-stroke-sm {
+  -webkit-text-stroke: 1px rgba(248, 250, 252, 0.3);
+  color: transparent;
+}
+
+.text-stroke-lg {
+  -webkit-text-stroke: 2px rgba(248, 250, 252, 0.2);
+  color: transparent;
+}
+
+.text-stroke-green {
+  -webkit-text-stroke: 1px rgba(0, 255, 135, 0.5);
+  color: transparent;
+}
+
+/* Custom Minimalist Dark Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #090A0F;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D4D4D8;
+  background: #222736;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A1A1AA;
+  background: #333B52;
 }
 
-/* Leaflet Overrides */
+/* Leaflet Dark Map Overrides */
 .leaflet-container {
   width: 100%;
   height: 100%;
   border-radius: 12px;
   z-index: 10;
+  background: #090A0F !important;
 }
 
-@keyframes fadeOutLabel {
-  0% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-  70% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(0.5rem) scale(0.95);
-  }
-}
-
-.animate-fadeOut {
-  animation: fadeOutLabel 2.5s ease-out forwards;
+.leaflet-tile-pane {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
 }
 

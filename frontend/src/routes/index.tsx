@@ -16,6 +16,9 @@ const OrdersPage = React.lazy(() => import('@/pages/shared/OrdersPage').then(m =
 const SellerListingsPage = React.lazy(() => import('@/pages/seller/SellerListingsPage').then(m => ({ default: m.SellerListingsPage })));
 const LogisticsPage = React.lazy(() => import('@/pages/buyer/LogisticsPage').then(m => ({ default: m.LogisticsPage })));
 const AIRecommendationPage = React.lazy(() => import('@/pages/buyer/AIRecommendationPage').then(m => ({ default: m.AIRecommendationPage })));
+const DiscoveryFingerprintPage = React.lazy(() => import('@/pages/discovery/DiscoveryFingerprintPage').then(m => ({ default: m.DiscoveryFingerprintPage })));
+const CarbonIntelligencePage = React.lazy(() => import('@/pages/intelligence/CarbonIntelligencePage').then(m => ({ default: m.CarbonIntelligencePage })));
+const PartnershipProjectsPage = React.lazy(() => import('@/pages/projects/PartnershipProjectsPage').then(m => ({ default: m.PartnershipProjectsPage })));
 const DemoOne = React.lazy(() => import('@/components/ui/demo'));
 const VelarisDemo = React.lazy(() => import('@/components/ui/velaris-demo'));
 
@@ -63,15 +66,19 @@ export const AppRoutes: React.FC = () => {
             <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
             <Route path="/seller/listings" element={<SellerListingsPage />} />
             <Route path="/seller/listings/new" element={<CreateListingPage />} />
+            <Route path="/discovery" element={<DiscoveryFingerprintPage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
             <Route path="/marketplace/:id" element={<SupplierDetailsPage />} />
             <Route path="/ai/recommend" element={<AIRecommendationPage />} />
+            <Route path="/intelligence" element={<CarbonIntelligencePage />} />
             <Route path="/logistics" element={<LogisticsPage />} />
             <Route path="/bids" element={<BidsPage />} />
             <Route path="/seller/bids" element={<BidsPage />} />
+            <Route path="/projects" element={<PartnershipProjectsPage />} />
             <Route path="/orders" element={<OrdersPage />} />
           </Route>
         </Route>
+
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

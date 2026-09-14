@@ -9,15 +9,17 @@ import {
   Search,
   ChevronDown,
   LogOut,
+  Sparkles,
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 import { GlobalSearchModal } from './GlobalSearchModal';
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
+  onOpenCopilot?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, onOpenCopilot }) => {
   const navigate = useNavigate();
   const { user, role, switchRole, isAuthenticated, logout } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -38,21 +40,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     };
   }, [isUserMenuOpen]);
 
-  // Enforce Light Theme only
+  // Set Dark Theme as Primary CarbonX Experience
   useEffect(() => {
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsSearchOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
   }, []);
 
   const handleRoleToggle = () => {
@@ -64,14 +55,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-neutral-200 bg-white/95 px-4 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/90 sm:px-6">
+      <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-[#222736] bg-[#090A0F]/90 px-4 backdrop-blur-md sm:px-6">
         {/* Left section */}
         <div className="flex items-center space-x-3">
           {onToggleSidebar && (
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="inline-flex items-center justify-center rounded-md p-2 text-neutral-700 hover:bg-neutral-100 hover:text-black focus:outline-none dark:text-neutral-300 dark:hover:bg-neutral-800 lg:hidden"
+              className="inline-flex items-center justify-center rounded-md p-2 text-[#94A3B8] hover:bg-[#181B26] hover:text-[#F8FAFC] focus:outline-none lg:hidden"
               aria-label="Toggle Navigation Sidebar"
             >
               <Menu className="h-5 w-5" />
@@ -79,27 +70,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           )}
 
           <div className="flex items-center space-x-2">
-            <span className="hidden text-xs font-semibold uppercase tracking-wider text-neutral-400 sm:inline-block">
-              Portal
+            <span className="hidden font-mono text-[10px] font-bold uppercase tracking-wider text-[#64748B] sm:inline-block">
+              PORTAL
             </span>
-            <span className="hidden text-neutral-300 sm:inline-block">/</span>
-            <div className={`flex items-center space-x-1.5 rounded-full border px-2.5 py-1 text-xs font-bold ${
+            <span className="hidden text-[#333B52] sm:inline-block">/</span>
+            <div className={`flex items-center space-x-1.5 rounded-full border px-2.5 py-1 font-mono text-xs font-bold ${
               role === 'seller'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                : 'border-blue-200 bg-blue-50 text-blue-800'
+                ? 'border-[#00FF87]/30 bg-[#00FF87]/10 text-[#00FF87]'
+                : 'border-[#00F0FF]/30 bg-[#00F0FF]/10 text-[#00F0FF]'
             }`}>
               {role === 'seller' ? (
                 <>
-                  <Factory className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Emitter Terminal</span>
+                  <Factory className="h-3.5 w-3.5 text-[#00FF87]" />
+                  <span>EMITTER TERMINAL</span>
                 </>
               ) : role === 'buyer' ? (
                 <>
-                  <Building2 className="h-3.5 w-3.5 text-blue-600" />
-                  <span>Off-Taker Terminal</span>
+                  <Building2 className="h-3.5 w-3.5 text-[#00F0FF]" />
+                  <span>OFF-TAKER TERMINAL</span>
                 </>
               ) : (
-                <span>Enterprise Platform</span>
+                <span>ENTERPRISE PLATFORM</span>
               )}
             </div>
           </div>
@@ -110,26 +101,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}
-            className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-1.5 text-xs text-slate-600 transition hover:border-emerald-400 hover:bg-white hover:text-slate-900"
+            data-cursor="SEARCH"
+            className="flex w-full items-center justify-between rounded-xl border border-[#222736] bg-[#12141C] px-3.5 py-1.5 font-sans text-xs text-[#94A3B8] transition hover:border-[#00FF87] hover:text-[#F8FAFC]"
           >
             <div className="flex items-center space-x-2">
-              <Search className="h-3.5 w-3.5 text-slate-400" />
-              <span>Search suppliers by company, city, industry...</span>
+              <Search className="h-3.5 w-3.5 text-[#00FF87]" />
+              <span>Search CO₂ sources, sinks, match scores...</span>
             </div>
-            <kbd className="inline-flex items-center rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-slate-700 shadow-xs">
+            <kbd className="inline-flex items-center rounded border border-[#333B52] bg-[#181B26] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#00FF87]">
               Ctrl+K
             </kbd>
           </button>
         </div>
 
-        {/* Right section: Demo Mode Pill, Persona switcher, Theme toggle, Notifications, User Badge */}
+        {/* Right section: Persona switcher, Notifications, Copilot, User Profile */}
         <div className="flex items-center space-x-2 sm:space-x-3">
-          {/* Mobile search button */}
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}
-            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:outline-none md:hidden"
-            aria-label="Search suppliers"
+            className="rounded-lg p-2 text-[#94A3B8] hover:bg-[#181B26] hover:text-[#F8FAFC] focus:outline-none md:hidden"
+            aria-label="Search"
           >
             <Search className="h-4 w-4" />
           </button>
@@ -139,68 +130,82 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             <button
               onClick={handleRoleToggle}
               type="button"
+              data-cursor="SWITCH"
               title="Switch between Seller (Emitter) and Buyer (Off-Taker)"
-              className="hidden lg:flex items-center space-x-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-800"
+              className="hidden lg:flex items-center space-x-1.5 rounded-lg border border-[#222736] bg-[#12141C] px-2.5 py-1.5 font-mono text-xs font-bold text-[#F8FAFC] transition hover:border-[#00FF87] hover:text-[#00FF87]"
             >
-              <ArrowRightLeft className="h-3.5 w-3.5 text-emerald-600" />
-              <span>Role:</span>
-              <strong className="capitalize underline decoration-emerald-500">{role}</strong>
+              <ArrowRightLeft className="h-3.5 w-3.5 text-[#00FF87]" />
+              <span>ROLE:</span>
+              <strong className="capitalize text-[#00FF87]">{role}</strong>
+            </button>
+          )}
+
+          {/* AI Copilot Quick Launcher */}
+          {onOpenCopilot && (
+            <button
+              onClick={onOpenCopilot}
+              type="button"
+              data-cursor="COPILOT"
+              className="inline-flex items-center space-x-1.5 rounded-xl border border-[#00FF87]/40 bg-[#00FF87]/10 px-3 py-1.5 font-mono text-xs font-bold text-[#00FF87] shadow-[0_0_15px_rgba(0,255,135,0.15)] hover:bg-[#00FF87] hover:text-[#090A0F] transition duration-200"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">COPILOT</span>
             </button>
           )}
 
           {/* Notification System Dropdown */}
           <NotificationDropdown />
 
-          {/* User profile interactive dropdown */}
-          <div className="relative border-l border-slate-200 pl-2 sm:pl-3" ref={userMenuRef}>
+          {/* User Profile */}
+          <div className="relative border-l border-[#222736] pl-2 sm:pl-3" ref={userMenuRef}>
             <button
               type="button"
               onClick={() => setIsUserMenuOpen((prev) => !prev)}
-              className="flex items-center space-x-2 rounded-xl p-1 transition hover:bg-slate-100 text-left focus:outline-none"
+              className="flex items-center space-x-2 rounded-xl p-1 transition hover:bg-[#181B26] text-left focus:outline-none"
               aria-label="User menu"
               aria-expanded={isUserMenuOpen}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-xs font-bold text-white shadow-xs">
-                {user?.full_name ? user.full_name.charAt(0) : 'U'}
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#00FF87] font-mono text-xs font-bold text-[#090A0F]">
+                {user?.full_name ? user.full_name.charAt(0) : 'C'}
               </div>
               <div className="hidden text-left sm:block">
-                <div className="text-xs font-bold text-slate-900 truncate max-w-[110px]">
-                  {user?.full_name || 'Guest User'}
+                <div className="text-xs font-bold text-[#F8FAFC] truncate max-w-[110px]">
+                  {user?.full_name || 'Carbon Operator'}
                 </div>
-                <div className="max-w-[110px] truncate text-[10px] text-slate-500 font-medium">
-                  {user?.company?.company_name || 'CarbonX'}
+                <div className="max-w-[110px] truncate font-mono text-[10px] text-[#94A3B8]">
+                  {user?.company?.company_name || 'CarbonX OS'}
                 </div>
               </div>
-              <ChevronDown className="hidden sm:block h-3 w-3 text-slate-400" />
+              <ChevronDown className="hidden sm:block h-3 w-3 text-[#64748B]" />
             </button>
 
             {/* Dropdown Menu */}
             {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="flex items-center space-x-3 pb-3 border-b border-slate-100">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-bold text-white shadow-xs">
-                    {user?.full_name ? user.full_name.charAt(0) : 'U'}
+              <div className="absolute right-0 mt-2 w-64 rounded-xl border border-[#222736] bg-[#12141C] p-3 shadow-floating z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center space-x-3 pb-3 border-b border-[#222736]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00FF87] font-mono text-sm font-bold text-[#090A0F]">
+                    {user?.full_name ? user.full_name.charAt(0) : 'C'}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900 truncate">{user?.full_name || 'User'}</p>
-                    <p className="text-[11px] text-slate-500 truncate">{user?.email || 'user@carbonx.in'}</p>
-                    <span className="inline-block mt-0.5 rounded bg-emerald-50 px-1.5 py-0.2 text-[9px] font-bold text-emerald-800 border border-emerald-200 uppercase">
+                    <p className="text-xs font-bold text-[#F8FAFC] truncate">{user?.full_name || 'User'}</p>
+                    <p className="font-mono text-[10px] text-[#94A3B8] truncate">{user?.email || 'operator@carbonx.in'}</p>
+                    <span className="inline-block mt-1 rounded bg-[#00FF87]/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-[#00FF87] border border-[#00FF87]/30 uppercase">
                       {role === 'seller' ? 'Point-Source Emitter' : 'CO2 Off-Taker'}
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-2 space-y-1">
+                <div className="mt-2 space-y-1 font-sans">
                   <button
                     type="button"
                     onClick={() => {
                       setIsUserMenuOpen(false);
                       handleRoleToggle();
                     }}
-                    className="w-full flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition"
+                    className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-[#CBD5E1] hover:bg-[#181B26] hover:text-[#00FF87] transition"
                   >
                     <span className="flex items-center gap-2">
-                      <ArrowRightLeft className="h-3.5 w-3.5 text-emerald-600" />
+                      <ArrowRightLeft className="h-3.5 w-3.5 text-[#00FF87]" />
                       <span>Switch to {role === 'seller' ? 'Buyer Terminal' : 'Emitter Terminal'}</span>
                     </span>
                   </button>
@@ -212,7 +217,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                       logout();
                       navigate('/login');
                     }}
-                    className="w-full flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition"
+                    className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-[#FF4B4B] hover:bg-[#FF4B4B]/10 transition"
                   >
                     <LogOut className="h-3.5 w-3.5" />
                     <span>Sign Out</span>
@@ -224,7 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
         </div>
       </header>
 
-      {/* Global Search Dialog Modal */}
+      {/* Global Command Center Dialog Modal */}
       <GlobalSearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}

@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { useToast } from '@/context/ToastContext';
 import { PlusCircle, RefreshCw } from 'lucide-react';
 import type { Listing, Bid, Order } from '@/types';
+import { Marquee, OpportunityBento, CarbonFlow } from '@/components/carbonx';
 
 export const SellerDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -213,11 +214,22 @@ export const SellerDashboardPage: React.FC = () => {
   const activePartners = new Set(bids.map((b) => b.counter_party_company).filter(Boolean)).size;
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-8 pb-12">
+      {/* Carbon Intelligence Marquee Ticker */}
+      <Marquee
+        items={[
+          'FLUE GAS STREAM #CO2-104: 94.2% PURITY · ACTIVE',
+          'MATCH FOUND: CARBONCURE PRECAST SINK · 94% SCORE',
+          'AVOIDED EMISSIONS: 16,800 tCO2e / YEAR',
+          'CRYO BUFFER CAPACITY: 148,200 TONNES AVAILABLE',
+          'PATHWAY VERIFIED: DIRECT MINERAL CARBONATION',
+        ]}
+      />
+
       {/* Page Header with Real-time Sync & CTA */}
       <PageHeader
-        title="Seller Dashboard"
-        description="Monitor cryogenic buffer telemetry, active stream batches, and incoming purchase contracts."
+        title="Point-Source Emitter Terminal"
+        description="Monitor industrial flue gas telemetry, active conversion pathways, and algorithmic match opportunities."
         breadcrumbs={[{ label: 'Terminal', to: '/seller/dashboard' }, { label: 'Plant Overview' }]}
         actions={
           <div className="flex items-center space-x-2.5">
@@ -243,6 +255,24 @@ export const SellerDashboardPage: React.FC = () => {
             </Button>
           </div>
         }
+      />
+
+      {/* Signature Opportunity Bento Hero */}
+      <OpportunityBento
+        topMatchName="JSW Steel Emitter #3 → CarbonCure Concrete Sink"
+        matchScore={averageAIMatch > 0 ? averageAIMatch : 94}
+        totalCapacityTonnes={totalCapacity > 0 ? totalCapacity : 148200}
+        activePathwaysCount={14}
+        verifiedSinksCount={28}
+      />
+
+      {/* Signature Carbon Transformation Flow */}
+      <CarbonFlow
+        sourceName="Integrated Steel Facility #3"
+        sourceTonnage={totalCO2Traded > 0 ? totalCO2Traded : 18420}
+        productName="Mineralized Concrete Elements"
+        purityPercent={94.2}
+        avoidedTonnage={Math.round((totalCO2Traded || 18420) * 0.9)}
       />
 
       {/* Error state handling with Retry button */}
