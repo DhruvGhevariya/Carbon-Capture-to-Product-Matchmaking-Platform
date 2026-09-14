@@ -13,7 +13,7 @@ def test_fingerprint_engine():
     })
 
     assert res["overall_quality_score"] > 80.0
-    assert res["readiness_tier"] == "READY"
+    assert res["readiness_classification"] == "READY"
     assert "Chemical Synthesis" in res["suitable_grades"]
 
 
@@ -49,9 +49,9 @@ def test_carbon_engine():
         "transport_distance_km": 50.0,
     })
 
-    assert res["co2_utilized_tons"] == 85.0
-    assert res["co2_avoided_net_tons"] > 0
-    assert res["net_carbon_benefit_score"] > 0
+    assert res["results"]["co2_utilized_tonnes"] == 85.0
+    assert res["results"]["co2_avoided_net_tonnes"] > 0
+    assert res["results"]["net_carbon_benefit_score"] > 0
 
 
 def test_economic_engine():

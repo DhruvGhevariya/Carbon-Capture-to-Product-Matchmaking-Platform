@@ -21,7 +21,6 @@ async def create_co2_source(
 ):
     org_id = user_payload.get("company_id")
     if not org_id:
-        # Fallback to first organization if user has no assigned company
         res_org = await db.execute(select(Organization))
         org = res_org.scalars().first()
         org_id = org.id if org else 1
@@ -47,7 +46,6 @@ async def create_co2_source(
     await db.commit()
     await db.refresh(source)
 
-    # Generate initial CO2 profile fingerprint
     fp = fingerprint_engine.generate_fingerprint({
         "purity_percentage": source.purity_percentage,
         "daily_capture_tonnes": source.daily_capture_tonnes,
@@ -62,9 +60,9 @@ async def create_co2_source(
         pressure_score=fp["pressure_score"],
         temperature_score=fp["temperature_score"],
         overall_quality_score=fp["overall_quality_score"],
-        readiness_tier=fp["readiness_tier"],
+        readiness_classification=fp["readiness_classification"],
         suitable_grades=fp["suitable_grades"],
-        version=1,
+        fingerprint_version=1,
     )
     db.add(profile)
     await db.commit()
@@ -127,7 +125,7 @@ async def get_co2_source_detail(id: int, db: AsyncSession = Depends(get_db)):
             "pressure_score": profile.pressure_score,
             "temperature_score": profile.temperature_score,
             "overall_quality_score": profile.overall_quality_score,
-            "readiness_tier": profile.readiness_tier,
+            "readiness_classification": profile.readiness_classification,
             "suitable_grades": profile.suitable_grades,
         }
 

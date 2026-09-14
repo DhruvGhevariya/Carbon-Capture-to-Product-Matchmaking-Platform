@@ -48,7 +48,7 @@ def test_carbon_calculation_api():
     assert response.status_code == 200
     res_json = response.json()
     assert res_json["success"] is True
-    assert res_json["data"]["co2_utilized_tons"] == 450.0
+    assert res_json["data"]["results"]["co2_utilized_tonnes"] == 450.0
 
 
 def test_scenario_calculation_api():
