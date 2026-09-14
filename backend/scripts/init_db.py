@@ -25,7 +25,7 @@ def init_database():
     print(f"[InitDB] Host: '{url.host}', Port: '{url.port}', User: '{url.username}'")
 
     # Step 1: Connect to maintenance database ('postgres') with AUTOCOMMIT to check/create target database
-    if target_db:
+    if target_db and not url.drivername.startswith("sqlite"):
         maintenance_url = url.set(database="postgres")
         print(f"[InitDB] Connecting to maintenance database to verify '{target_db}'...")
         try:
@@ -43,6 +43,8 @@ def init_database():
         except Exception as err:
             print(f"[InitDB Failure] Failed during database check/creation: {err}")
             sys.exit(1)
+    elif url.drivername.startswith("sqlite"):
+        print(f"[InitDB] Using SQLite database '{target_db}'.")
 
     # Step 2: Connect to target database and create all SQLAlchemy tables
     print(f"[InitDB] Connecting to '{target_db}' using SYNC_DATABASE_URL to create tables...")
