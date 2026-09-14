@@ -15,8 +15,9 @@ router = APIRouter(tags=["Matchmaking Engine"])
 @router.post("/ai/recommendations", response_model=StandardResponse)
 @router.post("/ai/recommend", response_model=StandardResponse)
 async def run_matchmaking(demand: MatchRequestSchema, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(Listing).where(Listing.status == "available"))
+    res = await db.execute(select(Listing).where(Listing.status.in_(["available", "ACTIVE"])))
     available_listings = res.scalars().all()
+
 
     evaluated_matches = []
     for l in available_listings:

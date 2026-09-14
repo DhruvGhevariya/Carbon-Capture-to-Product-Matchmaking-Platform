@@ -209,10 +209,14 @@ class Product(Base):
     uuid = Column(String(36), default=generate_uuid, unique=True, index=True)
     name = Column(String(255), nullable=False, index=True)
     category = Column(String(100), nullable=False, index=True)
+    product_type = Column(String(100), default="CHEMICAL")  # concrete, aggregates, carbonates, fuels, chemicals, polymers, construction materials, algae-derived, other
     description = Column(Text, nullable=True)
     cas_number = Column(String(50), nullable=True)
     co2_requirement_ton_per_unit = Column(Float, default=1.0)
-    market_price_per_unit = Column(Float, default=150.0)
+    market_price_amount = Column(Float, default=150.0)
+    market_price_currency = Column(String(10), default="USD")
+    market_price_unit = Column(String(50), default="ton")
+    market_price_per_unit = Column(Float, default=150.0)  # Legacy compatibility
     market_size_tonnes_year = Column(Float, default=1000000.0)
     trl = Column(Integer, default=8)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -346,7 +350,10 @@ class Listing(Base):
     purity_percentage = Column(Float, nullable=False)
     volume_metric_tons = Column(Float, nullable=False)
     physical_state = Column(String(50), nullable=False, default="liquid")
-    reserve_price_ton = Column(Float, nullable=False)
+    reserve_price_amount = Column(Float, nullable=False, default=4800.0)
+    reserve_price_currency = Column(String(10), default="USD")
+    reserve_price_unit = Column(String(50), default="ton")
+    reserve_price_ton = Column(Float, nullable=False)  # Legacy compatibility
     status = Column(String(50), default="ACTIVE", index=True)  # DRAFT, ACTIVE, PAUSED, CLOSED
     available_from = Column(Date, default=date.today)
     available_until = Column(Date, nullable=True)
@@ -366,7 +373,10 @@ class Bid(Base):
     uuid = Column(String(36), default=generate_uuid, unique=True, index=True)
     listing_id = Column(Integer, ForeignKey("listings.id"), nullable=False, index=True)
     buyer_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    offered_price_ton = Column(Float, nullable=False)
+    offered_price_amount = Column(Float, nullable=False, default=4800.0)
+    offered_price_currency = Column(String(10), default="USD")
+    offered_price_unit = Column(String(50), default="ton")
+    offered_price_ton = Column(Float, nullable=False)  # Legacy compatibility
     requested_quantity = Column(Float, nullable=False)
     delivery_target = Column(Date, nullable=True)
     status = Column(String(50), default="SUBMITTED", index=True)  # SUBMITTED, ACCEPTED, REJECTED, WITHDRAWN
@@ -407,6 +417,22 @@ class Partnership(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     projects = relationship("Project", back_populates="partnership")
+    participants = relationship("PartnershipParticipant", back_populates="partnership", cascade="all, delete-orphan")
+
+
+class PartnershipParticipant(Base):
+    __tablename__ = "partnership_participants"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    uuid = Column(String(36), default=generate_uuid, unique=True, index=True)
+    partnership_id = Column(Integer, ForeignKey("partnerships.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    participant_role = Column(String(50), default="EMITTER", nullable=False)  # EMITTER, TECHNOLOGY_PROVIDER, PRODUCT_BUYER, OFFTAKER, OTHER
+    status = Column(String(50), default="ACTIVE")
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    partnership = relationship("Partnership", back_populates="participants")
 
 
 class Project(Base):
@@ -422,7 +448,7 @@ class Project(Base):
     name = Column(String(255), nullable=False)
     expected_co2_utilization_tonnes = Column(Float, default=5000.0)
     expected_product_output_tonnes = Column(Float, default=7500.0)
-    status = Column(String(50), default="DRAFT", index=True)  # DRAFT, PROPOSED, TECHNICAL_VALIDATION, ACTIVE, COMPLETED, CANCELLED
+    status = Column(String(50), default="DRAFT", index=True)  # DRAFT, PROPOSED, UNDER_REVIEW, TECHNICAL_VALIDATION, COMMERCIAL_NEGOTIATION, ACTIVE, PAUSED, COMPLETED, CANCELLED
     version = Column(Integer, default=1)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     deleted_at = Column(DateTime, nullable=True)

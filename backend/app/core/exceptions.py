@@ -66,6 +66,17 @@ class ConcurrencyConflictException(CarbonXException):
         )
 
 
+class StateTransitionError(CarbonXException):
+    def __init__(self, current_state: str, target_state: str, allowed_states: Any = None):
+        super().__init__(
+            message=f"Cannot transition from '{current_state}' to '{target_state}'. Allowed next states: {allowed_states}.",
+            code="INVALID_STATE_TRANSITION",
+            status_code=status.HTTP_409_CONFLICT,
+            details={"current_state": current_state, "target_state": target_state, "allowed_states": allowed_states},
+        )
+
+
+
 def format_error_response(
     code: str,
     message: str,
