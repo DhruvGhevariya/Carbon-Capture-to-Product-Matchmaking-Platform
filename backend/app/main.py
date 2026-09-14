@@ -14,6 +14,9 @@ from app.api import (
     co2_sources_router,
     measurements_router,
     tech_router,
+    technologies_router,
+    products_router,
+    pathways_router,
     matching_router,
     calculations_router,
     marketplace_router,
@@ -142,8 +145,12 @@ app.include_router(auth_router, prefix=api_v1)
 app.include_router(co2_sources_router, prefix=api_v1)
 app.include_router(measurements_router, prefix=api_v1)
 app.include_router(tech_router, prefix=api_v1)
+app.include_router(technologies_router, prefix=api_v1)
+app.include_router(products_router, prefix=api_v1)
+app.include_router(pathways_router, prefix=api_v1)
 app.include_router(matching_router, prefix=api_v1)
 app.include_router(calculations_router, prefix=api_v1)
 app.include_router(marketplace_router, prefix=api_v1)
 app.include_router(partnerships_router, prefix=api_v1)
 app.include_router(copilot_router, prefix=api_v1)
+
