@@ -1,17 +1,17 @@
-from app.api.auth import router as auth_router
-from app.api.seller import router as seller_router
-from app.api.marketplace import router as marketplace_router
-from app.api.ai import router as ai_router
-from app.api.bids import router as bids_router
-from app.api.orders import router as orders_router
-from app.api.logistics import router as logistics_router
+from app.api.v1.auth import router as auth_router
+from app.api.v1.co2_sources import router as co2_sources_router
+from app.api.v1.technologies_products_pathways import router as tech_router
+from app.api.v1.matching import router as matching_router
+from app.api.v1.calculations import router as calculations_router
+from app.api.v1.marketplace import router as marketplace_router
+from app.api.v1.copilot_analytics_notifications import router as copilot_router
 
 __all__ = [
     "auth_router",
-    "seller_router",
+    "co2_sources_router",
+    "tech_router",
+    "matching_router",
+    "calculations_router",
     "marketplace_router",
-    "ai_router",
-    "bids_router",
-    "orders_router",
-    "logistics_router",
+    "copilot_router",
 ]

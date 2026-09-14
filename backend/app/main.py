@@ -6,29 +6,28 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.config import settings
-from app.database import init_db
+from app.core.config import settings
+from app.core.database import init_db
+from app.core.exceptions import CarbonXException, format_error_response
 from app.api import (
     auth_router,
-    seller_router,
+    co2_sources_router,
+    tech_router,
+    matching_router,
+    calculations_router,
     marketplace_router,
-    ai_router,
-    bids_router,
-    orders_router,
-    logistics_router,
+    copilot_router,
 )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: initialize database tables
     try:
         await init_db()
         print("[CarbonX] Database tables verified and initialized successfully.")
     except Exception as e:
         print(f"[CarbonX] Warning during database init: {e}")
     yield
-    # Shutdown logic if needed
     print("[CarbonX] Application shutdown complete.")
 
 
@@ -52,45 +51,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # -------------------------------------------------------------------
-# Global Standardized Error Handlers
+# Exception Handlers
 # -------------------------------------------------------------------
+@app.exception_handler(CarbonXException)
+async def custom_exception_handler(request: Request, exc: CarbonXException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=format_error_response(
+            code=exc.code,
+            message=exc.message,
+            status_code=exc.status_code,
+            details=exc.details,
+        ),
+    )
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     return JSONResponse(
         status_code=exc.status_code,
-        content={
-            "success": False,
-            "error": {
-                "code": f"HTTP_{exc.status_code}",
-                "message": exc.detail,
-                "status_code": exc.status_code,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            }
-        }
+        content=format_error_response(
+            code=f"HTTP_{exc.status_code}",
+            message=str(exc.detail),
+            status_code=exc.status_code,
+        ),
     )
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    errors = []
-    for err in exc.errors():
-        loc = " -> ".join(str(item) for item in err.get("loc", []))
-        msg = err.get("msg", "Validation error")
-        errors.append(f"{loc}: {msg}")
-
+    errors = [" -> ".join(str(i) for i in err.get("loc", [])) + f": {err.get('msg')}" for err in exc.errors()]
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "success": False,
-            "error": {
-                "code": "UNPROCESSABLE_ENTITY",
-                "message": "Input payload failed schema validation.",
-                "details": errors,
-                "status_code": 422,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            }
-        }
+        content=format_error_response(
+            code="UNPROCESSABLE_ENTITY",
+            message="Input payload failed schema validation.",
+            status_code=422,
+            details=errors,
+        ),
     )
 
 
@@ -98,28 +98,26 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def generic_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "success": False,
-            "error": {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "An unexpected server error occurred. Please retry later.",
-                "details": str(exc) if settings.DEBUG else None,
-                "status_code": 500,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            }
-        }
+        content=format_error_response(
+            code="INTERNAL_SERVER_ERROR",
+            message="An unexpected server error occurred.",
+            status_code=500,
+            details=str(exc) if settings.DEBUG else None,
+        ),
     )
 
 
 # -------------------------------------------------------------------
-# Health Check & Root
+# Health Checks & Root
 # -------------------------------------------------------------------
 @app.get("/health", tags=["Health"])
+@app.get("/ready", tags=["Health"])
 async def health_check():
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
+        "environment": settings.ENVIRONMENT,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -127,7 +125,7 @@ async def health_check():
 @app.get("/", tags=["Root"])
 async def root():
     return {
-        "message": "Welcome to the CarbonX Matchmaking Platform API",
+        "message": "Welcome to CarbonX Matchmaking Platform API",
         "documentation": "/docs",
         "version": settings.VERSION,
     }
@@ -139,9 +137,9 @@ async def root():
 api_v1 = settings.API_V1_STR
 
 app.include_router(auth_router, prefix=api_v1)
-app.include_router(seller_router, prefix=api_v1)
+app.include_router(co2_sources_router, prefix=api_v1)
+app.include_router(tech_router, prefix=api_v1)
+app.include_router(matching_router, prefix=api_v1)
+app.include_router(calculations_router, prefix=api_v1)
 app.include_router(marketplace_router, prefix=api_v1)
-app.include_router(ai_router, prefix=api_v1)
-app.include_router(bids_router, prefix=api_v1)
-app.include_router(orders_router, prefix=api_v1)
-app.include_router(logistics_router, prefix=api_v1)
+app.include_router(copilot_router, prefix=api_v1)

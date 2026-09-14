@@ -1,159 +1,140 @@
-# CarbonX Backend API
+# CarbonX Backend Platform Architecture
 
-AI-Powered Carbon Capture-to-Product Matchmaking Platform Backend Service.
+> **Modular, Scalable, Domain-Engine Powered Backend Service**
 
----
-
-## Technology Stack
-
-* **Language:** Python 3.12+
-* **Framework:** FastAPI (Asynchronous ASGI)
-* **ORM:** SQLAlchemy 2.0 (Async)
-* **Database:** PostgreSQL (with SQLite async compatibility for local zero-dependency testing)
-* **Validation:** Pydantic v2
-* **Security:** JWT (python-jose) + salted Bcrypt (passlib)
-* **API Documentation:** OpenAPI / Swagger UI
+The CarbonX backend is an asynchronous Python service built on **FastAPI**, **SQLAlchemy 2.0 (Async)**, and **Pydantic v2**. It powers multi-criteria CO₂ matchmaking, Life Cycle Assessment (LCA) carbon accounting, financial scenario modeling, B2B marketplace trading, and conversational AI copilot workflows.
 
 ---
 
-## Directory Structure
+## 🏛️ Architecture Overview
 
+```text
+                               ┌─────────────────────┐
+                               │     REST Clients    │
+                               │ (React 19 Frontend) │
+                               └──────────┬──────────┘
+                                          │ Async REST JSON
+                                          ▼
+                               ┌─────────────────────┐
+                               │      FastAPI        │
+                               │     API Gateway     │
+                               └──────────┬──────────┘
+                                          │
+             ┌────────────────────────────┼────────────────────────────┐
+             │                            │                            │
+             ▼                            ▼                            ▼
+      Authentication                Domain Engines               Services Layer
+   (JWT, Bcrypt, Roles)          (Matching, Carbon, Econ)     (Auth, CO2, Marketplace)
+             │                            │                            │
+             └────────────────────────────┼────────────────────────────┘
+                                          │
+                                          ▼
+                               ┌─────────────────────┐
+                               │  SQLAlchemy 2.0 ORM │
+                               └──────────┬──────────┘
+                                          │
+                                          ▼
+                               ┌─────────────────────┐
+                               │ PostgreSQL / SQLite │
+                               └─────────────────────┘
 ```
+
+---
+
+## 🧠 Domain Engines Summary
+
+### 1. CO₂ Fingerprint Engine (`app/engines/fingerprint/fingerprint_engine.py`)
+- Evaluates raw CO₂ stream attributes (`purity`, `volume`, `pressure`, `temperature`).
+- Computes normalized quality sub-scores and readiness tiers (`READY`, `CONDITIONALLY_READY`, `REQUIRES_TREATMENT`, `NOT_READY`).
+- Maps stream purity to industrial utilization grades (*Food Grade*, *Chemical Synthesis*, *Concrete Mineralization*).
+
+### 2. Multi-Criteria Matchmaking Engine (`app/engines/matching/match_engine.py`)
+- Evaluates hard constraints (*Minimum Purity Floor*, *Minimum Volume Threshold*, *600 km Max Distance Radius*).
+- Applies configurable weighted scoring:
+  - **Technical Purity Fit**: 30%
+  - **Economic Landed Price**: 25%
+  - **Environmental Footprint**: 20%
+  - **Geographic Distance**: 15%
+  - **TRL Maturity**: 10%
+- Generates Explainable AI (XAI) natural language rationales, confidence ratings, and warnings.
+
+### 3. LCA Carbon Balance Engine (`app/engines/carbon/carbon_engine.py`)
+- Deterministic calculation of gross CO₂ captured, conversion efficiency yield, transport heavy trucking emissions, and net avoided carbon.
+
+### 4. Financial Scenario Engine (`app/engines/economics/economic_engine.py`)
+- Models CAPEX, OPEX, freight cost, annual revenue, gross margin, payback period, and 10-year NPV across **Conservative**, **Base**, and **Optimistic** scenarios.
+
+---
+
+## 📂 Backend Folder Structure
+
+```text
 backend/
 ├── app/
-│   ├── api/                  # RESTful API routers
-│   │   ├── auth.py           # Registration, login, profile
-│   │   ├── seller.py         # Dashboard, listings CRUD
-│   │   ├── marketplace.py    # Catalog feed & stream specs
-│   │   ├── ai.py             # Matchmaking recommendation
-│   │   ├── bids.py           # Bidding & acceptance workflow
-│   │   ├── orders.py         # Order management & fulfillment
-│   │   └── logistics.py      # Route & carbon calculation
-│   ├── models/               # SQLAlchemy 2.0 ORM entities
-│   │   ├── company.py
-│   │   ├── user.py
-│   │   ├── listing.py
-│   │   ├── bid.py
-│   │   ├── order.py
-│   │   ├── ai_match.py
-│   │   └── logistics.py
-│   ├── schemas/              # Pydantic v2 request & response models
-│   │   ├── auth.py
-│   │   ├── user.py
-│   │   ├── listing.py
-│   │   ├── bid.py
-│   │   ├── order.py
-│   │   ├── ai.py
-│   │   └── logistics.py
-│   ├── services/             # Core business logic
-│   │   ├── auth_service.py
-│   │   ├── ai_service.py     # Deterministic AI recommendation engine
-│   │   └── logistics_service.py # Geospatial & carbon calculation
-│   ├── config.py             # Pydantic settings & environment variables
-│   ├── database.py           # Async engine & session management
-│   ├── security.py           # Password hashing & JWT token guards
-│   └── main.py               # FastAPI application entry point
-├── requirements.txt          # Production dependencies
-├── .env.example              # Environment variables template
-├── seed.py                   # Realistic Indian industrial seed script
-└── README.md
+│   ├── core/                  # Configuration, Database Engine, Security, Exceptions, Dependencies
+│   │   ├── config.py          # Pydantic Settings & Environment Variables
+│   │   ├── database.py        # Async Session Engine & Lifecycle
+│   │   ├── security.py        # Bcrypt Password Hashing & JWT Tokens
+│   │   ├── exceptions.py      # Standardized Error Handling
+│   │   └── dependencies.py    # Role Authorization & Current User Injectors
+│   ├── models/                # SQLAlchemy 2.0 ORM Entities
+│   │   ├── domain.py          # Organization, User, CO2Source, Profile, Listing, Bid, Order, Match
+│   │   └── __init__.py        # Export Aliases
+│   ├── schemas/               # Pydantic v2 Request/Response Validation Schemas
+│   │   ├── domain_schemas.py  # Input/Output Data Contracts
+│   │   └── __init__.py
+│   ├── engines/               # Core Domain Engines
+│   │   ├── fingerprint/       # Stream Quality & Grade Classification
+│   │   ├── matching/          # Deterministic Multi-Criteria Matchmaker
+│   │   ├── carbon/            # LCA Carbon Balance
+│   │   └── economics/         # Financial Scenario Simulator
+│   ├── api/                   # REST API Routers
+│   │   ├── v1/
+│   │   │   ├── auth.py
+│   │   │   ├── co2_sources.py
+│   │   │   ├── technologies_products_pathways.py
+│   │   │   ├── matching.py
+│   │   │   ├── calculations.py
+│   │   │   ├── marketplace.py
+│   │   │   └── copilot_analytics_notifications.py
+│   │   └── __init__.py
+│   └── main.py                # FastAPI Entry point, CORS & Error Handlers
+├── tests/                     # Pytest Test Suite
+│   ├── test_engines.py
+│   └── test_api.py
+├── alembic/                   # Database Migrations Setup
+├── alembic.ini
+├── Dockerfile                 # Backend Container Build Script
+├── requirements.txt           # Python Dependencies
+└── seed.py                    # Idempotent Database Seeder
 ```
 
 ---
 
-## Local PostgreSQL Setup
+## ⚡ Quick Start & Commands
 
-Follow these steps to set up and run the CarbonX backend with PostgreSQL locally:
+### 1. Initialize & Seed Database
+```bash
+python seed.py
+```
 
-1. **Create and activate the virtual environment:**
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Configure environment variables:**
-   Copy `.env.example` to `.env` and set your PostgreSQL credentials:
-   ```bash
-   cp .env.example .env
-   ```
-   ```env
-   DATABASE_URL=postgresql+asyncpg://postgres:YOUR_PASSWORD@localhost:5432/carbonx
-   SYNC_DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/carbonx
-   SECRET_KEY=change-this-secret-key
-   ALLOWED_ORIGINS=http://localhost:5173
-   ```
-
-4. **Initialize the database (creates database and all tables):**
-   ```bash
-   python scripts/init_db.py
-   ```
-
-5. **Start the API server:**
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-
-6. **Interactive Swagger Documentation:**
-   Explore and test endpoints at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-
----
-
-## Getting Started
-
-### 1. Prerequisites
-* Python 3.10+ (Recommended: Python 3.12)
-* PostgreSQL 15+
-
-### 2. Run the API Server
-
+### 2. Run API Dev Server
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
+*API Documentation available at `http://127.0.0.1:8000/docs`.*
 
-* **Interactive Swagger UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-* **ReDoc Documentation:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
-* **Health Check:** [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
-
----
-
-## Core API Endpoints
-
-| Domain | Method | Endpoint | Description |
-| :--- | :---: | :--- | :--- |
-| **Auth** | `POST` | `/api/v1/auth/register` | Register new user and enterprise |
-| | `POST` | `/api/v1/auth/login` | Issue 8-hour JWT Bearer token |
-| | `GET` | `/api/v1/auth/me` | Fetch active user profile |
-| **Seller** | `GET` | `/api/v1/seller/dashboard` | Plant buffer gauge & capture stats |
-| | `POST` | `/api/v1/listings` | Publish new point-source CO₂ batch |
-| | `GET` | `/api/v1/listings` | View active inventory |
-| | `PUT` | `/api/v1/listings/{id}` | Update listing parameters |
-| | `DELETE`| `/api/v1/listings/{id}` | Cancel active listing |
-| **Marketplace** | `GET` | `/api/v1/marketplace` | Filtered CO₂ catalog with distances |
-| | `GET` | `/api/v1/marketplace/{id}`| Gas spec sheet & emitter profile |
-| **AI Match** | `POST` | `/api/v1/ai/recommend` | Multi-parametric scoring & XAI |
-| **Logistics** | `POST` | `/api/v1/logistics/estimate`| Road freight & carbon accounting |
-| **Bids** | `POST` | `/api/v1/bids` | Submit binding purchase bid |
-| | `GET` | `/api/v1/bids` | View incoming / outgoing bids |
-| | `PATCH`| `/api/v1/bids/{id}` | Accept or decline bid (generates order)|
-| **Orders** | `GET` | `/api/v1/orders` | View confirmed contracts |
-| | `GET` | `/api/v1/orders/{id}` | Digital Bill of Lading & specs |
-| | `PATCH`| `/api/v1/orders/{id}` | Update status (`in_transit` $\rightarrow$ `completed`)|
+### 3. Run Test Suite
+```bash
+pytest tests/
+```
 
 ---
 
-## AI Match Score Engine
+## 🐳 Docker Deployment
 
-The recommendation engine (`app/services/ai_service.py`) evaluates candidate batches using the Phase 7 multi-criteria optimization model:
-* **CO₂ Purity:** 30%
-* **Distance & Logistics:** 25%
-* **Delivered Landed Cost:** 20%
-* **Quantity Fit:** 10%
-* **Delivery Lead Time:** 10%
-* **Supplier Reliability:** 5%
+To launch the full backend stack with PostgreSQL and Redis:
 
-It enforces hard disqualification gates (e.g., purity deficiencies, $>500$ km distance) before computing normalized scores (0–100) and generating explainable natural language rationales.
+```bash
+docker-compose up --build -d
+```
