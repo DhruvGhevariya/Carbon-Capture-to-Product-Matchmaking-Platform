@@ -34,3 +34,31 @@ def test_idempotency_header_interceptor():
     full_key = '/api/v1/calculations/carbon:key-bid-999'
     assert full_key in _idempotency_store
     assert _idempotency_store[full_key] == res1.json()
+
+
+def test_idempotency_concurrent_duplicate_requests():
+    import concurrent.futures
+
+    key = "concurrent-idempotency-key-555"
+    headers = {"X-Idempotency-Key": key}
+    payload = {
+        "co2_captured_tons": 1000.0,
+        "conversion_efficiency": 0.85,
+        "transport_distance_km": 25.0,
+    }
+
+    def send_request():
+        return client.post("/api/v1/calculations/carbon", json=payload, headers=headers)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(send_request) for _ in range(5)]
+        results = [f.result() for f in futures]
+
+    for r in results:
+        assert r.status_code == 200
+        assert r.json()["success"] is True
+
+    store_idempotent_response("/api/v1/calculations/carbon", key, results[0].json())
+    assert f"/api/v1/calculations/carbon:{key}" in _idempotency_store
+
+
