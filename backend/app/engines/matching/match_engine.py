@@ -1,12 +1,14 @@
 import math
-from typing import Dict, Any, List, Optional
+from datetime import datetime, timezone
+from typing import Dict, Any, List
 from app.core.config import settings
 
 
 class MatchEngine:
     """
-    Deterministic, Multi-Criteria Recommendation & Eligibility Engine for CarbonX.
+    Deterministic Multi-Criteria Recommendation & Eligibility Engine.
     Evaluates Technical, Economic, Environmental, Geographic, and TRL compatibility.
+    Stores versioning metadata for 100% decision auditability.
     """
 
     @classmethod
@@ -77,22 +79,15 @@ class MatchEngine:
         # ---------------------------------------------------------
         # 2. SUB-DIMENSION NORMALIZED SCORING (0 to 100)
         # ---------------------------------------------------------
-        # Technical Score
         tech_score = 100.0 if purity >= 99.0 else max(50.0, 70.0 + (purity - req_purity) * 3.0)
 
-        # Economic Score
         if total_landed_cost <= budget_ton:
             econ_score = min(100.0, 80.0 + ((budget_ton - total_landed_cost) / budget_ton) * 20.0)
         else:
             econ_score = max(20.0, 80.0 - ((total_landed_cost - budget_ton) / budget_ton) * 50.0)
 
-        # Environmental Score (Lower transport distance = higher environmental benefit)
         env_score = max(40.0, 100.0 - (distance_km / 500.0) * 40.0)
-
-        # Geographic Score
         geo_score = max(30.0, 100.0 - (distance_km / 300.0) * 50.0)
-
-        # TRL Score
         trl_score = 90.0
 
         # ---------------------------------------------------------
@@ -127,9 +122,11 @@ class MatchEngine:
         )
 
         return {
+            "algorithm_version": settings.ALGORITHM_VERSION,
+            "scoring_weight_version": settings.SCORING_WEIGHT_VERSION,
+            "evaluated_at": datetime.now(timezone.utc).isoformat(),
             "listing_id": candidate_source.get("id"),
             "source_id": candidate_source.get("source_id", candidate_source.get("id")),
-            "technology_id": candidate_source.get("technology_id"),
             "supplier_name": supplier_name,
             "industry_type": industry,
             "location": location,

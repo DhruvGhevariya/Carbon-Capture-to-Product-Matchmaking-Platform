@@ -1,10 +1,13 @@
+from datetime import datetime, timezone
 from typing import Dict, Any
+from app.core.config import settings
 
 
-class CarbonCalculationEngine:
+class CarbonImpactEngine:
     """
-    Deterministic Life Cycle Assessment (LCA) Carbon Balance Engine.
-    Calculates gross CO2 captured, utilized, avoided emissions, transport footprint, and net offset.
+    Deterministic Carbon Impact Engine for CarbonX.
+    Calculates gross CO2 captured, utilized, transport emissions, net avoided carbon, and permanently stored CO2.
+    Stores reproducible formula and assumption metadata.
     """
 
     @classmethod
@@ -36,14 +39,35 @@ class CarbonCalculationEngine:
         net_carbon_benefit_score = round(min(100.0, (co2_avoided_net / max(1.0, co2_captured_tons)) * 100.0), 1)
 
         return {
-            "co2_captured_tons": co2_captured_tons,
-            "co2_utilized_tons": co2_utilized,
-            "co2_avoided_net_tons": co2_avoided_net,
-            "co2_permanently_stored_tons": co2_permanently_stored,
-            "process_emissions_tons": process_emissions,
-            "transport_emissions_tons": transport_emissions,
-            "net_carbon_benefit_score": net_carbon_benefit_score,
+            "formula_version": settings.FORMULA_VERSION,
+            "calculated_at": datetime.now(timezone.utc).isoformat(),
+            "inputs": {
+                "co2_captured_tonnes": co2_captured_tons,
+                "conversion_efficiency_ratio": conversion_efficiency,
+                "transport_distance_km": transport_distance_km,
+                "avoidance_factor_ratio": avoidance_factor,
+            },
+            "units": {
+                "co2_captured": "metric tonnes",
+                "co2_utilized": "metric tonnes",
+                "co2_avoided_net": "metric tonnes CO2e",
+                "transport_emissions": "metric tonnes CO2e",
+            },
+            "assumptions": {
+                "process_emission_intensity": "0.15 tCO2e/t_utilized",
+                "trucking_transport_intensity": "0.00012 tCO2e/t-km",
+                "storage_permanence_ratio": "0.90",
+            },
+            "results": {
+                "co2_captured_tonnes": co2_captured_tons,
+                "co2_utilized_tonnes": co2_utilized,
+                "co2_avoided_net_tonnes": co2_avoided_net,
+                "co2_permanently_stored_tonnes": co2_permanently_stored,
+                "process_emissions_tonnes": process_emissions,
+                "transport_emissions_tonnes": transport_emissions,
+                "net_carbon_benefit_score": net_carbon_benefit_score,
+            },
         }
 
 
-carbon_engine = CarbonCalculationEngine()
+carbon_engine = CarbonImpactEngine()

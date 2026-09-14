@@ -1,10 +1,13 @@
+from datetime import datetime, timezone
 from typing import Dict, Any, List
+from app.core.config import settings
 
 
 class CO2FingerprintEngine:
     """
     Evaluates raw CO2 stream attributes (purity, volume, pressure, temperature, impurities)
     and computes normalized quality scores, readiness tiers, and suitable utilization grades.
+    Stores reproducible versioning metadata.
     """
 
     @classmethod
@@ -45,15 +48,15 @@ class CO2FingerprintEngine:
         overall = (purity_score * 0.40) + (volume_score * 0.30) + (pressure_score * 0.15) + (temperature_score * 0.15)
         overall_quality_score = round(overall, 1)
 
-        # Readiness Tier
+        # Readiness Classification
         if purity >= 98.0 and pressure_bar >= 5.0:
-            readiness_tier = "READY"
+            readiness = "READY"
         elif purity >= 92.0:
-            readiness_tier = "CONDITIONALLY_READY"
+            readiness = "CONDITIONALLY_READY"
         elif purity >= 80.0:
-            readiness_tier = "REQUIRES_TREATMENT"
+            readiness = "REQUIRES_TREATMENT"
         else:
-            readiness_tier = "NOT_READY"
+            readiness = "NOT_READY"
 
         # Suitable Grades
         suitable_grades: List[str] = []
@@ -67,14 +70,22 @@ class CO2FingerprintEngine:
             suitable_grades.append("Geological Sequestration Pre-treatment Required")
 
         return {
+            "algorithm_version": settings.ALGORITHM_VERSION,
+            "fingerprint_version": 1,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "input_snapshot_json": {
+                "purity_percentage": purity,
+                "daily_capture_tonnes": daily_volume,
+                "pressure_bar": pressure_bar,
+                "temperature_c": temperature_c,
+            },
             "purity_score": round(purity_score, 1),
             "volume_score": round(volume_score, 1),
             "pressure_score": round(pressure_score, 1),
             "temperature_score": round(temperature_score, 1),
             "overall_quality_score": overall_quality_score,
-            "readiness_tier": readiness_tier,
+            "readiness_classification": readiness,
             "suitable_grades": suitable_grades,
-            "version": 1,
         }
 
 

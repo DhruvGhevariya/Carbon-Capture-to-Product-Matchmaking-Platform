@@ -1,10 +1,13 @@
+from datetime import datetime, timezone
 from typing import Dict, Any, List
+from app.core.config import settings
 
 
 class FinancialEconomicEngine:
     """
     Financial Scenario & Economic Modeling Engine for CarbonX.
     Computes CAPEX, OPEX, revenue, gross margin, payback period, NPV, and ROI across scenarios.
+    Exposes explicit assumption sources and version metadata.
     """
 
     @classmethod
@@ -38,7 +41,7 @@ class FinancialEconomicEngine:
         # Revenue
         annual_revenue = round(effective_volume * effective_product_price, 2)
 
-        # Logistics & Feedstock Costs
+        # Freight & OPEX
         freight_cost = distance_km * 3.5 * effective_volume
         annual_opex = round((base_opex + freight_cost) * opex_mult, 2)
 
@@ -46,10 +49,7 @@ class FinancialEconomicEngine:
         gross_margin = round(annual_revenue - annual_opex, 2)
 
         # Payback Period (years)
-        if gross_margin > 0:
-            payback_years = round(capex / gross_margin, 1)
-        else:
-            payback_years = 99.0
+        payback_years = round(capex / gross_margin, 1) if gross_margin > 0 else 99.0
 
         # Simple 10-Year Net Present Value (NPV @ 10% discount rate)
         discount_rate = 0.10
@@ -62,7 +62,9 @@ class FinancialEconomicEngine:
         roi = round(((gross_margin * 10 - capex) / capex) * 100, 1) if capex > 0 else 0.0
 
         return {
+            "formula_version": settings.FORMULA_VERSION,
             "scenario": scenario_type.upper(),
+            "calculated_at": datetime.now(timezone.utc).isoformat(),
             "annual_revenue": annual_revenue,
             "annual_operating_cost": annual_opex,
             "gross_margin_annual": gross_margin,
@@ -70,10 +72,12 @@ class FinancialEconomicEngine:
             "npv_10_year": npv,
             "roi_percentage": roi,
             "assumptions_used": {
-                "effective_product_price": round(effective_product_price, 2),
-                "effective_volume_tons": round(effective_volume, 2),
-                "freight_cost_annual": round(freight_cost, 2),
                 "scenario_type": scenario_type.upper(),
+                "effective_product_price_per_unit": round(effective_product_price, 2),
+                "effective_volume_tonnes": round(effective_volume, 2),
+                "freight_cost_annual": round(freight_cost, 2),
+                "discount_rate": 0.10,
+                "assumption_source": "CarbonX Regional Benchmark 2026",
             },
         }
 

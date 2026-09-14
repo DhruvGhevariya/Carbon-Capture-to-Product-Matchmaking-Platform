@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from fastapi import Request, status
@@ -56,6 +57,15 @@ class ValidationException(CarbonXException):
         )
 
 
+class ConcurrencyConflictException(CarbonXException):
+    def __init__(self, message: str = "The resource was modified by another concurrent request. Please reload."):
+        super().__init__(
+            message=message,
+            code="CONCURRENCY_CONFLICT",
+            status_code=status.HTTP_409_CONFLICT,
+        )
+
+
 def format_error_response(
     code: str,
     message: str,
@@ -70,7 +80,7 @@ def format_error_response(
             "message": message,
             "details": details or {},
             "status_code": status_code,
+            "request_id": request_id or f"req_{uuid.uuid4().hex[:12]}",
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "request_id": request_id,
         },
     }

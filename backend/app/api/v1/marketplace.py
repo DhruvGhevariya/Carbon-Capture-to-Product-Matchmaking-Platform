@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from app.core.database import get_db
 from app.core.exceptions import EntityNotFoundException, ValidationException
-from app.core.dependencies import get_current_user_token_payload
+from app.core.dependencies import get_current_user_token_payload, require_roles
 from app.models.domain import Listing, User, Organization, Bid, Order
 from app.schemas.domain_schemas import StandardResponse, BidCreateSchema
 
@@ -18,7 +18,7 @@ router = APIRouter(tags=["Marketplace & Orders"])
 # -------------------------------------------------------------
 @router.get("/seller/dashboard", response_model=StandardResponse)
 async def get_seller_dashboard(
-    user_payload: dict = Depends(get_current_user_token_payload),
+    user_payload: dict = Depends(require_roles(["EMITTER", "ADMIN", "SUPER_ADMIN"])),
     db: AsyncSession = Depends(get_db),
 ):
     seller_id = int(user_payload.get("sub", 1))
@@ -84,7 +84,7 @@ async def get_seller_listings(
 @router.post("/listings", response_model=StandardResponse)
 async def create_listing(
     payload: dict,
-    user_payload: dict = Depends(get_current_user_token_payload),
+    user_payload: dict = Depends(require_roles(["EMITTER", "ADMIN", "SUPER_ADMIN"])),
     db: AsyncSession = Depends(get_db),
 ):
     seller_id = int(user_payload.get("sub", 1))

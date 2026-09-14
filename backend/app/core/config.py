@@ -9,9 +9,14 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
 
-    # Database Configuration
-    DATABASE_URL: str = "sqlite+aiosqlite:///./carbonx.db"
-    SYNC_DATABASE_URL: Optional[str] = "sqlite:///./carbonx.db"
+    # Algorithm & Formula Versions
+    ALGORITHM_VERSION: str = "v1.0.0"
+    SCORING_WEIGHT_VERSION: str = "v1.0.0"
+    FORMULA_VERSION: str = "v1.0.0"
+
+    # Database Configuration (PostgreSQL Canonical)
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/carbonx"
+    SYNC_DATABASE_URL: Optional[str] = "postgresql://postgres:postgres@localhost:5432/carbonx"
 
     # Redis Configuration
     REDIS_URL: Optional[str] = "redis://localhost:6379/0"
@@ -21,10 +26,10 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 hours
 
-    # CORS
+    # CORS Configuration
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
 
-    # Match Engine Weights
+    # Centralized Match Engine Weights
     WEIGHT_TECHNICAL: float = 30.0
     WEIGHT_ECONOMIC: float = 25.0
     WEIGHT_ENVIRONMENTAL: float = 20.0
@@ -61,7 +66,7 @@ class Settings(BaseSettings):
 
 try:
     settings = Settings()
-except Exception as e:
+except Exception:
     settings = Settings(
         DATABASE_URL="sqlite+aiosqlite:///./carbonx.db",
         SYNC_DATABASE_URL="sqlite:///./carbonx.db",

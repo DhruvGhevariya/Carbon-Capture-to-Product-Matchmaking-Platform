@@ -140,7 +140,7 @@ async def seed():
             pressure_score=95.0,
             temperature_score=92.0,
             overall_quality_score=94.5,
-            readiness_tier="READY",
+            readiness_classification="READY",
             suitable_grades=["Chemical Synthesis", "Concrete Mineralization"],
         )
         db.add(fp1)

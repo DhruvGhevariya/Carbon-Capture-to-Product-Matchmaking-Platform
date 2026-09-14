@@ -12,10 +12,12 @@ from app.core.exceptions import CarbonXException, format_error_response
 from app.api import (
     auth_router,
     co2_sources_router,
+    measurements_router,
     tech_router,
     matching_router,
     calculations_router,
     marketplace_router,
+    partnerships_router,
     copilot_router,
 )
 
@@ -138,8 +140,10 @@ api_v1 = settings.API_V1_STR
 
 app.include_router(auth_router, prefix=api_v1)
 app.include_router(co2_sources_router, prefix=api_v1)
+app.include_router(measurements_router, prefix=api_v1)
 app.include_router(tech_router, prefix=api_v1)
 app.include_router(matching_router, prefix=api_v1)
 app.include_router(calculations_router, prefix=api_v1)
 app.include_router(marketplace_router, prefix=api_v1)
+app.include_router(partnerships_router, prefix=api_v1)
 app.include_router(copilot_router, prefix=api_v1)
